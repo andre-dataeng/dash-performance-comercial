@@ -1,0 +1,84 @@
+# Criando as medidas
+
+Clientes Únicos = 
+DISTINCTCOUNT(Vendas[ClienteID])
+
+--------------------------------------------------------
+
+Custo Total = 
+SUMX(
+    Vendas,
+    Vendas[Quantidade] * RELATED(Produtos[Custo_Unitario])
+)
+
+--------------------------------------------------------
+
+Faturamento Bruto = 
+SUMX(
+    Vendas,
+    Vendas[Quantidade] * RELATED(Produtos[Preco_Unitario])
+)
+
+--------------------------------------------------------
+
+Faturamento Líquido = 
+[Faturamento Bruto] - [Valor Desconto]
+
+
+--------------------------------------------------------
+
+Faturamento Mensal = 
+CALCULATE(
+    [Faturamento Líquido],
+    ALLEXCEPT(Vendas, Vendas[Data_Venda])
+)
+
+--------------------------------------------------------
+
+Faturamento YTD = 
+TOTALYTD(
+    [Faturamento Líquido],
+    Vendas[Data_Venda]
+)
+
+
+--------------------------------------------------------
+
+Lucro = 
+[Faturamento Líquido] - [Custo Total]
+
+
+--------------------------------------------------------
+
+Margem de lucro % = 
+DIVIDE([Lucro],[Faturamento Líquido],0)
+
+
+--------------------------------------------------------
+
+Quantidade Total = 
+SUM(Vendas[Quantidade])
+
+
+--------------------------------------------------------
+
+Ticket Médio = 
+DIVIDE(
+    [Faturamento Líquido],
+    DISTINCTCOUNT(Vendas[VendaID]),
+0)
+
+--------------------------------------------------------
+
+Total de Vendas = 
+DISTINCTCOUNT(Vendas[VendaID])
+
+--------------------------------------------------------
+
+Valor Desconto = 
+SUMX(
+    Vendas,
+    (Vendas[Quantidade] * RELATED(Produtos[Preco_Unitario]))
+    * (Vendas[Desconto] / 100)
+)
+
