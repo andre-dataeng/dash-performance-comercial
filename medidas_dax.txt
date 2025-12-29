@@ -1,7 +1,12 @@
 # Criando as medidas
 
+
 Clientes Únicos = 
 DISTINCTCOUNT(Vendas[ClienteID])
+
+O que faz: Conta quantos clientes diferentes fizeram compras no período.
+
+Por que usar: Evita contar o mesmo cliente várias vezes, mostrando o tamanho real da sua base ativa.
 
 --------------------------------------------------------
 
@@ -11,6 +16,10 @@ SUMX(
     Vendas[Quantidade] * RELATED(Produtos[Custo_Unitario])
 )
 
+O que faz: Calcula o custo de mercadoria vendida (CMV) multiplicando a quantidade pela tabela de custo.
+
+Nota Técnica: Usa SUMX para calcular linha por linha e RELATED para buscar o custo unitário na tabela de Produtos.
+
 --------------------------------------------------------
 
 Faturamento Bruto = 
@@ -19,11 +28,16 @@ SUMX(
     Vendas[Quantidade] * RELATED(Produtos[Preco_Unitario])
 )
 
+O que faz: Soma o valor total das vendas antes de qualquer desconto.
+
+Cálculo: Multiplica a quantidade vendida pelo preço unitário original do produto.
+
 --------------------------------------------------------
 
 Faturamento Líquido = 
 [Faturamento Bruto] - [Valor Desconto]
 
+O que faz: Apresenta o valor real que entrou no caixa após subtrair os descontos concedidos.
 
 --------------------------------------------------------
 
@@ -33,6 +47,10 @@ CALCULATE(
     ALLEXCEPT(Vendas, Vendas[Data_Venda])
 )
 
+O que faz: Calcula o faturamento total do mês ignorando outros filtros de linha, mantendo o foco na data.
+
+Nota Técnica: O ALLEXCEPT garante que o cálculo respeite apenas a cronologia da Data_Venda.
+
 --------------------------------------------------------
 
 Faturamento YTD = 
@@ -41,24 +59,31 @@ TOTALYTD(
     Vendas[Data_Venda]
 )
 
+O que faz: Acumula o faturamento líquido desde o primeiro dia do ano atual até a data selecionada.
 
+Uso: Essencial para acompanhar se as metas anuais estão sendo batidas.
 --------------------------------------------------------
 
 Lucro = 
 [Faturamento Líquido] - [Custo Total]
 
+O que faz: Calcula o ganho real da operação subtraindo o custo total do faturamento líquido.
 
 --------------------------------------------------------
 
 Margem de lucro % = 
 DIVIDE([Lucro],[Faturamento Líquido],0)
 
+O que faz: Mostra a rentabilidade do negócio em percentual.
+
+Cálculo: Divide o lucro pelo faturamento líquido, usando DIVIDE para evitar erro de divisão por zero.
 
 --------------------------------------------------------
 
 Quantidade Total = 
 SUM(Vendas[Quantidade])
 
+O que faz: Soma simples de todos os itens vendidos.
 
 --------------------------------------------------------
 
@@ -68,10 +93,14 @@ DIVIDE(
     DISTINCTCOUNT(Vendas[VendaID]),
 0)
 
+O que faz: Indica o valor médio gasto por cada pedido (venda única) feito na loja.
+
 --------------------------------------------------------
 
 Total de Vendas = 
 DISTINCTCOUNT(Vendas[VendaID])
+
+O que faz: Conta o volume total de pedidos (transações) realizados no período.
 
 --------------------------------------------------------
 
@@ -82,3 +111,4 @@ SUMX(
     * (Vendas[Desconto] / 100)
 )
 
+O que faz: Calcula o montante total em dinheiro que foi "perdido" ou cedido em forma de descontos.
