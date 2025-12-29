@@ -1,53 +1,56 @@
 import pandas as pd
+import random
 
-def processar_etl_comercial():
-    """
-    ETL fiel à estrutura do projeto de André:
-    Tabelas: Produtos, Clientes, Lojas, Estoque e Vendas.
-    """
+# --- PASSO 1: CRIAR OS DADOS (EXTRAÇÃO SIMULADA) ---
+print("Iniciando a criação dos dados...")
+
+# Criando a lista de produtos manualmente para ficar fácil de entender
+dados_produtos = {
+    'ID': [1, 2, 3, 4],
+    'Nome': ['Camiseta Preta', 'Calça Jeans', 'Tênis Esportivo', 'Boné Aba Curva'],
+    'Preco': [50.00, 120.00, 250.00, 45.00]
+}
+df_produtos = pd.DataFrame(dados_produtos)
+
+# Criando as lojas
+dados_lojas = {
+    'ID': [101, 102],
+    'Nome': ['Loja Centro', 'Loja Shopping']
+}
+df_lojas = pd.DataFrame(dados_lojas)
+
+# --- PASSO 2: GERAR VENDAS (TRANSFORMAÇÃO) ---
+print("Gerando 50 vendas aleatórias...")
+
+vendas_lista = []
+
+for i in range(1, 51):  # Vamos criar 50 vendas
+    # Sorteia um produto da nossa lista acima
+    indice_sorteado = random.randint(0, 3) 
+    produto_nome = df_produtos.loc[indice_sorteado, 'Nome']
+    preco_unitario = df_produtos.loc[indice_sorteado, 'Preco']
     
-    # 1. SIMULAÇÃO DE CARGA (Conforme suas imagens)
-    # Tabela Produtos (image_58044c.png)
-    produtos_data = {
-        'ProdutoID': [1, 2, 3],
-        'Produto': ['Camiseta Básica', 'Camiseta Estampada', 'Blusa Social'],
-        'Preco_Unitario': [59.9, 69.9, 129.9],
-        'Custo_Unitario': [25.0, 28.0, 60.0]
+    quantidade = random.randint(1, 3)
+    valor_total = preco_unitario * quantidade
+
+    # Monta a linha da venda
+    venda = {
+        'ID_Venda': i,
+        'Produto': produto_nome,
+        'Qtd': quantidade,
+        'Valor_Total': valor_total,
+        'Loja_ID': random.choice([101, 102])
     }
-    
-    # Tabela Vendas (image_580521.png)
-    vendas_data = {
-        'VendaID': [1, 2, 3, 4],
-        'Data_Venda': ['2025-01-03', '2025-01-10', '2025-01-05', '2025-01-30'],
-        'ProdutoID': [6, 10, 4, 13],
-        'Quantidade': [1, 4, 4, 2],
-        'Desconto': [15, 5, 0, 15]
-    }
+    vendas_lista.append(venda)
 
-    df_produtos = pd.DataFrame(produtos_data)
-    df_vendas = pd.DataFrame(vendas_data)
+df_vendas = pd.DataFrame(vendas_lista)
 
-    print("--- Iniciando Processamento de Dados (Fiel ao Schema) ---")
+# --- PASSO 3: SALVAR TUDO NO EXCEL (CARGA) ---
+print("Salvando o arquivo final...")
 
-    # 2. TRANSFORMAÇÃO (Lógica de Engenharia)
-    # Cruzando Vendas com Produtos para ter os preços e custos
-    df_final = pd.merge(df_vendas, df_produtos, on='ProdutoID', how='left')
+with pd.ExcelWriter('loja_roupas_powerbi.xlsx') as writer:
+    df_vendas.to_excel(writer, sheet_name='Vendas', index=False)
+    df_produtos.to_excel(writer, sheet_name='Produtos', index=False)
+    df_lojas.to_excel(writer, sheet_name='Lojas', index=False)
 
-    # Cálculo de Faturamento Líquido (Preço * Qtd - Desconto)
-    df_final['Faturamento_Liquido'] = (df_final['Preco_Unitario'] * df_final['Quantidade']) - df_final['Desconto']
-
-    # Cálculo de Custo Total
-    df_final['Custo_Total'] = df_final['Custo_Unitario'] * df_final['Quantidade']
-
-    # Cálculo de Lucro e Margem %
-    df_final['Lucro'] = df_final['Faturamento_Liquido'] - df_final['Custo_Total']
-    df_final['Margem_Percentual'] = (df_final['Lucro'] / df_final['Faturamento_Liquido']) * 100
-
-    # 3. CARGA (Visualização do Resultado)
-    print("ETL Concluído! KPIs calculados com sucesso.")
-    print(df_final[['VendaID', 'Data_Venda', 'Faturamento_Liquido', 'Lucro', 'Margem_Percentual']].head())
-
-    return df_final
-
-if __name__ == "__main__":
-    processar_etl_comercial()
+print("Pronto! O arquivo 'loja_roupas_powerbi.xlsx' foi criado.")
